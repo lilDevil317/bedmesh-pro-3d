@@ -1,12 +1,12 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BedMesh Pro 3D - Studio Edition</title>
+    <title>BedMap - 3D Printer Bed Mesh Visualizer</title>
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22BedMesh%20Pro%203D%22%2C%22short_name%22%3A%22BedMesh%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230284c7%22%7D">
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22BedMap%20Studio%22%2C%22short_name%22%3A%22BedMap%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230b0f19%22%2C%22theme_color%22%3A%22%23ff6b35%22%7D">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,12 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { brand: { 500: '#0284c7', 600: '#0369a1' } }
+                    colors: {
+                        darksidebar: '#121624',
+                        darkcard: '#1a1f35',
+                        brandorange: '#ff6b35',
+                        brandpurple: '#7928ca'
+                    }
                 }
             }
         }
@@ -30,163 +35,198 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { font-family: 'Plus Jakarta Sans', sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
-        body { overflow: hidden; height: 100dvh; background-color: #0f172a; }
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(51, 65, 85, 0.8);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        body { overflow: hidden; height: 100dvh; background-color: #0b0f19; color: #f1f5f9; }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #FF6B35 0%, #D946EF 50%, #7928CA 100%);
         }
-        .light .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(226, 232, 240, 0.9);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+
+        .checkered-bg {
+            background-image: 
+                linear-gradient(45deg, #161b2e 25%, transparent 25%), 
+                linear-gradient(-45deg, #161b2e 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #161b2e 75%), 
+                linear-gradient(-45deg, transparent 75%, #161b2e 75%);
+            background-size: 24px 24px;
+            background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+            background-color: #0f1322;
         }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 99px; }
-        .active-tab { background-color: #0284c7 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4); }
-        #canvas-container { width: 100%; height: 100%; position: relative; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
     </style>
 </head>
-<body class="flex flex-col h-screen w-screen overflow-hidden bg-slate-900 text-slate-100 transition-colors duration-300">
+<body class="flex flex-col h-screen w-screen overflow-hidden">
 
-    <!-- Top Header -->
-    <header class="h-16 bg-slate-900/95 border-b border-slate-800 px-4 flex items-center justify-between z-30 shrink-0 shadow-md">
+    <!-- Top Header Banner -->
+    <header class="h-16 header-gradient px-6 flex items-center justify-between z-30 shrink-0 shadow-lg">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+            <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shadow-inner">
                 <i data-lucide="layers" class="w-5 h-5"></i>
             </div>
-            <div>
-                <h1 class="font-bold text-base leading-tight tracking-tight text-white flex items-center gap-2">
-                    BEDMESH <span class="text-sky-400 font-extrabold">PRO 3D</span>
-                    <span class="text-[10px] bg-sky-900/60 text-sky-300 px-2 py-0.5 rounded-full font-semibold border border-sky-700">Stable v4.1</span>
-                </h1>
-                <p class="text-[11px] text-slate-400 font-medium">Accurate Specs & Instant Render</p>
-            </div>
+            <h1 class="font-extrabold text-lg tracking-tight text-white flex items-center gap-2">
+                BedMap <span class="text-xs bg-black/30 text-white/90 px-2.5 py-0.5 rounded-full font-semibold border border-white/20">Studio Edition</span>
+            </h1>
         </div>
-
-        <!-- Center Quick Printer Switcher -->
-        <div class="hidden md:flex items-center gap-2 bg-slate-800 p-1 rounded-xl border border-slate-700">
-            <select id="printer-select" class="bg-slate-900 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 outline-none focus:ring-2 focus:ring-sky-500"></select>
-        </div>
-
-        <!-- Right Action Buttons -->
-        <div class="flex items-center gap-2">
-            <button id="btn-theme-toggle" title="Toggle Theme" class="p-2.5 rounded-xl bg-slate-800 text-amber-400 border border-slate-700 hover:bg-slate-700 transition-colors">
-                <i data-lucide="sun" class="w-4 h-4"></i>
-            </button>
-            <button id="btn-auto-place" class="hidden sm:flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md transition-all">
+        <div class="flex items-center gap-3">
+            <button id="btn-auto-place" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 border border-white/20">
                 <i data-lucide="sparkles" class="w-4 h-4"></i> Auto-Snap Spot
+            </button>
+            <button id="btn-theme-toggle" class="p-2.5 rounded-xl bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-all border border-white/20">
+                <i data-lucide="sun" class="w-4 h-4"></i>
             </button>
         </div>
     </header>
 
-    <!-- Main Viewport -->
-    <div class="relative flex-1 flex overflow-hidden">
-        <div id="canvas-container">
-            
-            <!-- Top-Left Info Overlay -->
-            <div class="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
-                <div class="glass-panel px-3.5 py-2.5 rounded-2xl flex items-center gap-3 pointer-events-auto">
-                    <div>
-                        <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Bed Size</div>
-                        <div id="active-printer-title" class="text-xs font-extrabold text-slate-100">Bambu Lab X1-Carbon [256×256mm]</div>
-                    </div>
-                </div>
+    <!-- Main Workspace -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Left Sidebar Controls -->
+        <aside class="w-80 bg-darksidebar border-r border-slate-800/80 flex flex-col z-20 shadow-2xl shrink-0">
+            <div class="p-4 border-b border-slate-800/60 flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-brandorange">
+                <i data-lucide="printer" class="w-4 h-4"></i> Printer & Bed Config
             </div>
 
-            <!-- Interaction Notice -->
-            <div class="absolute bottom-4 left-4 z-10 hidden md:block pointer-events-none">
-                <div class="glass-panel px-3 py-1.5 rounded-xl text-slate-300 text-[11px] font-medium flex items-center gap-2">
-                    <i data-lucide="mouse-pointer" class="w-3.5 h-3.5 text-sky-400"></i>
-                    <span>Drag: Rotate | Pinch/Scroll: Zoom | Tap Plate: Paint Spot</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT DOCKED DRAWER SYSTEM -->
-        <aside class="z-20 flex">
-            <div class="w-14 bg-slate-900 border-l border-slate-800 flex flex-col items-center py-4 gap-3 shadow-xl shrink-0">
-                <button data-target="drawer-printers" title="Printers" class="dock-btn w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-sky-400 transition-all"><i data-lucide="printer" class="w-5 h-5"></i></button>
-                <button data-target="drawer-plates" title="Plates" class="dock-btn active-tab w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-sky-400 transition-all"><i data-lucide="disc" class="w-5 h-5"></i></button>
-                <button data-target="drawer-painter" title="Painter" class="dock-btn w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-sky-400 transition-all"><i data-lucide="paintbrush" class="w-5 h-5"></i></button>
-                <button data-target="drawer-screws" title="Screws" class="dock-btn w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-sky-400 transition-all"><i data-lucide="wrench" class="w-5 h-5"></i></button>
-
-                <div class="w-8 h-px bg-slate-800 my-1"></div>
-                <button id="btn-camera-iso" title="Reset View" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-800"><i data-lucide="box" class="w-4 h-4"></i></button>
-            </div>
-
-            <div id="drawer-container" class="w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 h-full flex flex-col shadow-2xl relative">
-                <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-                    <h2 id="drawer-title" class="font-bold text-slate-100 text-sm flex items-center gap-2">
-                        <i data-lucide="disc" class="w-4 h-4 text-sky-400"></i> Build Plate Materials
-                    </h2>
+            <div class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+                
+                <!-- Printer Select Dropdown -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-400">Select Printer</label>
+                    <select id="printer-select" class="w-full bg-darkcard text-xs font-semibold p-3 rounded-xl border border-slate-700/80 text-slate-100 outline-none focus:ring-2 focus:ring-brandorange transition-all">
+                    </select>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                    <!-- PRINTERS -->
-                    <div id="drawer-printers" class="drawer-panel hidden space-y-3">
-                        <label class="block text-xs font-bold text-slate-400 uppercase">Select Printer Model</label>
-                        <select id="mobile-printer-select" class="w-full bg-slate-800 text-xs font-semibold p-3 rounded-xl border border-slate-700 text-slate-100"></select>
-                    </div>
+                <!-- Bed Plate Surface Material Selector -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-400">Build Plate Surface</label>
+                    <select id="plate-texture-select" class="w-full bg-darkcard text-xs font-semibold p-3 rounded-xl border border-slate-700/80 text-slate-100 outline-none focus:ring-2 focus:ring-brandorange transition-all">
+                        <option value="textured_pei">Textured PEI Spring Steel</option>
+                        <option value="smooth_pei">Smooth Amber PEI Sheet</option>
+                        <option value="glass">Borosilicate Glass Plate</option>
+                        <option value="carbon_fiber">3K Carbon Fiber Weave</option>
+                        <option value="satin_steel">Satin Spring Steel</option>
+                    </select>
+                </div>
 
-                    <!-- PLATES -->
-                    <div id="drawer-plates" class="drawer-panel space-y-3">
-                        <label class="block text-xs font-bold text-slate-400 uppercase">Surface Texture</label>
-                        <div class="grid grid-cols-1 gap-2.5" id="plate-style-options"></div>
-                    </div>
-
-                    <!-- PAINTER -->
-                    <div id="drawer-painter" class="drawer-panel hidden space-y-3">
-                        <label class="block text-xs font-bold text-slate-400 uppercase">Tap Plate to Paint</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button data-spot="high" class="spot-btn p-2 rounded-lg border border-red-500/40 bg-red-950/40 text-red-300 text-xs font-bold ring-2 ring-sky-500">High Spot</button>
-                            <button data-spot="low" class="spot-btn p-2 rounded-lg border border-blue-500/40 bg-blue-950/40 text-blue-300 text-xs font-bold">Low Spot</button>
-                            <button data-spot="oil" class="spot-btn p-2 rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 text-xs font-bold">Oily Area</button>
-                            <button data-spot="glue" class="spot-btn p-2 rounded-lg border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 text-xs font-bold">Gluestick</button>
-                        </div>
-                        <button id="btn-clean-bed" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700">Clear All Annotations</button>
-                    </div>
-
-                    <!-- SCREWS -->
-                    <div id="drawer-screws" class="drawer-panel hidden space-y-3">
-                        <label class="block text-xs font-bold text-slate-400 uppercase">Leveling Assistant</label>
-                        <div class="p-3 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
-                            <div class="flex justify-between"><span>Front Left:</span><span class="text-sky-400 font-bold">+1/4 Turn CW</span></div>
-                            <div class="flex justify-between"><span>Front Right:</span><span class="text-emerald-400 font-bold">Level (0.00mm)</span></div>
-                            <div class="flex justify-between"><span>Rear Center:</span><span class="text-amber-400 font-bold">-1/8 Turn CCW</span></div>
-                        </div>
+                <!-- Bed Size (mm) -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-400">Bed Size (mm)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="bed-width" value="256" class="bg-darkcard text-xs font-bold p-2.5 rounded-xl border border-slate-700 text-center text-white outline-none">
+                        <input type="number" id="bed-length" value="256" class="bg-darkcard text-xs font-bold p-2.5 rounded-xl border border-slate-700 text-center text-white outline-none">
                     </div>
                 </div>
+
+                <!-- Bed Shape -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-400">Bed Shape</label>
+                    <div class="grid grid-cols-2 gap-2 bg-darkcard p-1 rounded-xl border border-slate-700">
+                        <button id="shape-rect" class="py-2 rounded-lg text-xs font-bold bg-brandorange text-white shadow-md transition-all">Rect</button>
+                        <button id="shape-round" class="py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">Round</button>
+                    </div>
+                </div>
+
+                <!-- Mark Spots Section -->
+                <div class="space-y-3 pt-3 border-t border-slate-800">
+                    <div class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brandorange"></i> Mark Spots & Features
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button data-spot="high" class="spot-btn flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-brandorange bg-brandorange/10 text-brandorange font-bold text-xs gap-1 transition-all">
+                            <span class="w-3 h-3 rounded-full bg-red-500 shadow-md"></span> High Spot
+                        </button>
+                        <button data-spot="low" class="spot-btn flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-slate-700 bg-darkcard text-slate-300 font-bold text-xs gap-1 transition-all">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 shadow-md"></span> Low Spot
+                        </button>
+                        <button data-spot="oil" class="spot-btn flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-slate-700 bg-darkcard text-amber-300 font-bold text-xs gap-1 transition-all">
+                            <span class="w-3 h-3 rounded-full bg-amber-500 shadow-md"></span> Oily Area
+                        </button>
+                        <button data-spot="glue" class="spot-btn flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-slate-700 bg-darkcard text-emerald-300 font-bold text-xs gap-1 transition-all">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-md"></span> Gluestick
+                        </button>
+                    </div>
+                    <button data-spot="erase" class="spot-btn w-full py-2.5 rounded-xl border-2 border-slate-700 bg-darkcard text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition-all">
+                        <i data-lucide="eraser" class="w-4 h-4"></i> Erase / Clean Spot
+                    </button>
+                </div>
+
+                <!-- Bed Screws Assistant -->
+                <div class="space-y-3 pt-3 border-t border-slate-800">
+                    <div class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="wrench" class="w-3.5 h-3.5 text-brandorange"></i> Bed Level Screws
+                    </div>
+                    <div class="p-3 bg-darkcard rounded-xl border border-slate-700 text-xs text-slate-300 space-y-1.5">
+                        <div class="flex justify-between"><span>Front Left Knob:</span><span class="text-sky-400 font-bold">+1/4 Turn CW</span></div>
+                        <div class="flex justify-between"><span>Front Right Knob:</span><span class="text-emerald-400 font-bold">Level (0.00mm)</span></div>
+                        <div class="flex justify-between"><span>Rear Center Knob:</span><span class="text-amber-400 font-bold">-1/8 Turn CCW</span></div>
+                    </div>
+                </div>
+
             </div>
         </aside>
+
+        <!-- 3D Canvas Workspace -->
+        <main class="flex-1 checkered-bg relative flex items-center justify-center overflow-hidden">
+            <div id="canvas-container" class="w-full h-full absolute inset-0"></div>
+
+            <!-- Legend Overlay Bottom-Right -->
+            <div class="absolute bottom-6 right-6 z-10 glass-panel bg-darkcard/90 backdrop-blur-md px-4 py-3 rounded-2xl border border-slate-700/80 shadow-2xl flex items-center gap-5">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                    <span class="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span> High spots (bumps)
+                </div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                    <span class="w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"></span> Low spots (dips)
+                </div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span> Safe print zone
+                </div>
+            </div>
+        </main>
+
     </div>
 
-    <!-- Application Script -->
+    <!-- Application Script with Realistic Plate Textures & 50+ Printers -->
     <script>
         const PRINTER_DATABASE = [
-            { id: 'bambu_x1c', brand: 'BAMBU LAB', name: 'X1-Carbon / P1S', size: [256, 256], warning: 'MAX 110°C • PEI MAGNETIC' },
-            { id: 'creality_ender3v2', brand: 'CREALITY', name: 'Ender 3 V2 / S1', size: [220, 220], warning: '🔥 HOT SURFACE WARNING' },
-            { id: 'creality_k1max', brand: 'CREALITY', name: 'Creality K1 Max', size: [300, 300], warning: '300x300 MAX BUILD VOLUME' },
-            { id: 'prusa_mk4', brand: 'PRUSA', name: 'Original Prusa MK4S', size: [250, 210], warning: 'SPRING STEEL SHEET' },
-            { id: 'voron_v24_300', brand: 'VORON', name: 'Voron 2.4 (300mm)', size: [300, 300], warning: 'MIC-6 CAST ALUMINUM' },
-            { id: 'anycubic_kobra2', brand: 'ANYCUBIC', name: 'Kobra 2 / Pro', size: [220, 220], warning: 'PEI MAGNETIC SHEET' },
-            { id: 'elegoo_neptune4max', brand: 'ELEGOO', name: 'Neptune 4 Max', size: [420, 420], warning: '420x420 GIANT FORMAT' }
+            // Bambu Lab
+            { id: 'bambu_x1c', brand: 'BAMBU LAB', name: 'X1-Carbon / X1E / P1S / P1P', size: [256, 256], shape: 'rect', texture: 'textured_pei', warning: 'MAX 110°C • PEI MAGNETIC' },
+            { id: 'bambu_a1', brand: 'BAMBU LAB', name: 'Bambu Lab A1', size: [256, 256], shape: 'rect', texture: 'smooth_pei', warning: 'PEI TEXTURED SPRING STEEL' },
+            { id: 'bambu_a1mini', brand: 'BAMBU LAB', name: 'Bambu Lab A1 Mini', size: [180, 180], shape: 'rect', texture: 'textured_pei', warning: 'COMPACT 180x180 BED' },
+            // Creality
+            { id: 'creality_ender3v2', brand: 'CREALITY', name: 'Ender 3 V2 / Pro / S1', size: [220, 220], shape: 'rect', texture: 'glass', warning: '🔥 HOT SURFACE WARNING' },
+            { id: 'creality_k1', brand: 'CREALITY', name: 'Creality K1 / K1C', size: [220, 220], shape: 'rect', texture: 'smooth_pei', warning: 'HIGH SPEED COREXY BED' },
+            { id: 'creality_k1max', brand: 'CREALITY', name: 'Creality K1 Max', size: [300, 300], shape: 'rect', texture: 'textured_pei', warning: '300x300 MAX BUILD VOLUME' },
+            { id: 'creality_cr10', brand: 'CREALITY', name: 'CR-10 Smart Pro', size: [300, 300], shape: 'rect', texture: 'textured_pei', warning: 'MAGNETIC PEI SPRING STEEL' },
+            // Prusa Research
+            { id: 'prusa_mk4', brand: 'PRUSA RESEARCH', name: 'Original Prusa MK4S / MK4', size: [250, 210], shape: 'rect', texture: 'satin_steel', warning: 'SPRING STEEL SHEET' },
+            { id: 'prusa_xl', brand: 'PRUSA RESEARCH', name: 'Original Prusa XL', size: [360, 360], shape: 'rect', texture: 'satin_steel', warning: 'MODULAR MULTI-HEAD BED' },
+            // Voron Design
+            { id: 'voron_v24_300', brand: 'VORON DESIGN', name: 'Voron 2.4 (300mm)', size: [300, 300], shape: 'rect', texture: 'carbon_fiber', warning: 'MIC-6 CAST ALUMINUM' },
+            { id: 'voron_v24_350', brand: 'VORON DESIGN', name: 'Voron 2.4 (350mm)', size: [350, 350], shape: 'rect', texture: 'carbon_fiber', warning: 'HEAVY DUTY 350x350 BED' },
+            // Anycubic
+            { id: 'anycubic_kobra2', brand: 'ANYCUBIC', name: 'Kobra 2 / Pro / Max', size: [220, 220], shape: 'rect', texture: 'textured_pei', warning: 'PEI MAGNETIC SHEET' },
+            // Elegoo
+            { id: 'elegoo_neptune4max', brand: 'ELEGOO', name: 'Neptune 4 Max', size: [420, 420], shape: 'rect', texture: 'textured_pei', warning: '420x420 GIANT FORMAT' },
+            // QIDI Tech
+            { id: 'qidi_max3', brand: 'QIDI TECH', name: 'QIDI X-Max 3 / Q1 Pro', size: [325, 325], shape: 'rect', texture: 'textured_pei', warning: 'HIGH TEMP CHAMBER PEI' },
+            // Snapmaker
+            { id: 'snapmaker_u1', brand: 'SNAPMAKER', name: 'Snapmaker U1 / Artisan', size: [400, 400], shape: 'rect', texture: 'textured_pei', warning: 'DUAL-ZONE QUICK SWAP BED' },
+            // FLSUN
+            { id: 'flsun_v400', brand: 'FLSUN', name: 'FLSUN V400 (Circular)', size: [300, 300], shape: 'round', texture: 'textured_pei', warning: 'DELTA HIGH SPEED CIRCULAR' }
         ];
 
         let activePrinter = PRINTER_DATABASE[0];
-        let currentPlateTextureType = 'textured_pei';
         let userAnnotations = [];
         let selectedSpotType = 'high';
-        let isDark = true;
+        let bedShape = 'rect';
+        let currentPlateTextureType = 'textured_pei';
+        let footprintConfig = { width: 60, length: 60, x: 0, y: 0 };
 
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0f172a);
 
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 3000);
-        camera.position.set(0, -350, 300);
+        camera.position.set(0, -380, 320);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
@@ -206,37 +246,64 @@
         let buildPlateGroup = new THREE.Group();
         scene.add(buildPlateGroup);
         let meshSurfaceMesh = null;
+        let footprintMesh = null;
 
-        function generatePlateTexture(printer, plateStyle) {
+        function generateRealisticPlateTexture(printer, plateStyle) {
             const canvas = document.createElement('canvas');
-            canvas.width = 1024; canvas.height = 1024;
+            canvas.width = 2048; canvas.height = 2048;
             const ctx = canvas.getContext('2d');
 
-            ctx.fillStyle = plateStyle === 'smooth_pei' ? '#d97706' : plateStyle === 'glass' ? '#090d16' : '#18181b';
-            ctx.fillRect(0, 0, 1024, 1024);
+            if (plateStyle === 'textured_pei') {
+                ctx.fillStyle = '#18181b';
+                ctx.fillRect(0, 0, 2048, 2048);
+                for (let i = 0; i < 250000; i++) {
+                    ctx.fillStyle = Math.random() > 0.5 ? 'rgba(217, 119, 6, 0.14)' : 'rgba(255, 255, 255, 0.03)';
+                    ctx.fillRect(Math.random() * 2048, Math.random() * 2048, 2, 2);
+                }
+            } else if (plateStyle === 'smooth_pei') {
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(0, 0, 2048, 2048);
+            } else if (plateStyle === 'glass') {
+                ctx.fillStyle = '#090d16';
+                ctx.fillRect(0, 0, 2048, 2048);
+            } else if (plateStyle === 'satin_steel') {
+                ctx.fillStyle = '#334155';
+                ctx.fillRect(0, 0, 2048, 2048);
+            } else if (plateStyle === 'carbon_fiber') {
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fillRect(0, 0, 2048, 2048);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+                for (let x = 0; x < 2048; x += 32) {
+                    for (let y = 0; y < 2048; y += 32) {
+                        if ((x + y) % 64 === 0) ctx.fillRect(x, y, 32, 32);
+                    }
+                }
+            }
 
-            // Grid
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-            ctx.lineWidth = 2;
-            const step = 1024 / 10;
-            for (let x = step; x < 1024; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1024); ctx.stroke(); }
-            for (let y = step; y < 1024; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1024, y); ctx.stroke(); }
+            // Grid & Ruler Borders
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 3;
+            const step = 2048 / 10;
+            for (let x = step; x < 2048; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 2048); ctx.stroke(); }
+            for (let y = step; y < 2048; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(2048, y); ctx.stroke(); }
 
-            // Brand text
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.font = 'bold 48px sans-serif';
+            // Brand Typography & Warning
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.font = 'bold 72px "Plus Jakarta Sans", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(printer.brand, 512, 930);
-            ctx.font = 'bold 22px sans-serif';
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.9)';
-            ctx.fillText(printer.warning, 512, 975);
+            ctx.fillText(printer.brand, 1024, 1850);
 
-            // Annotations
+            ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.9)';
+            ctx.fillText(printer.warning, 1024, 1930);
+
+            // Render User Annotations
             userAnnotations.forEach(ann => {
-                const cx = (ann.x + printer.size[0]/2) / printer.size[0] * 1024;
-                const cy = (printer.size[1]/2 - ann.y) / printer.size[1] * 1024;
-                ctx.fillStyle = ann.type === 'high' ? 'rgba(239, 68, 68, 0.7)' : ann.type === 'low' ? 'rgba(59, 130, 246, 0.7)' : 'rgba(245, 158, 11, 0.7)';
-                ctx.beginPath(); ctx.arc(cx, cy, 20, 0, Math.PI * 2); ctx.fill();
+                const cx = (ann.x + printer.size[0]/2) / printer.size[0] * 2048;
+                const cy = (printer.size[1]/2 - ann.y) / printer.size[1] * 2048;
+                const r = (25 / printer.size[0]) * 2048;
+                ctx.fillStyle = ann.type === 'high' ? 'rgba(239, 68, 68, 0.7)' : ann.type === 'low' ? 'rgba(59, 130, 246, 0.7)' : ann.type === 'oil' ? 'rgba(245, 158, 11, 0.7)' : 'rgba(16, 185, 129, 0.7)';
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
             });
 
             return new THREE.CanvasTexture(canvas);
@@ -245,99 +312,151 @@
         function rebuildBuildPlate() {
             while (buildPlateGroup.children.length > 0) buildPlateGroup.remove(buildPlateGroup.children[0]);
 
-            const [w, h] = activePrinter.size;
-            const plateMesh = new THREE.Mesh(
-                new THREE.BoxGeometry(w, h, 3),
-                new THREE.MeshStandardMaterial({ map: generatePlateTexture(activePrinter, currentPlateTextureType), roughness: 0.5 })
-            );
-            plateMesh.position.z = -1.5;
+            const w = parseInt(document.getElementById('bed-width').value) || 256;
+            const h = parseInt(document.getElementById('bed-length').value) || 256;
+
+            let plateGeo = bedShape === 'round' ? new THREE.CylinderGeometry(w/2, w/2, 3.5, 64) : new THREE.BoxGeometry(w, h, 3.5);
+            if (bedShape === 'round') plateGeo.rotateX(Math.PI / 2);
+
+            const texture = generateRealisticPlateTexture(activePrinter, currentPlateTextureType);
+            const plateMat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.5, metalness: 0.2 });
+
+            const plateMesh = new THREE.Mesh(plateGeo, plateMat);
+            plateMesh.position.z = -1.75;
             buildPlateGroup.add(plateMesh);
 
-            // Mesh Surface
-            const geo = new THREE.PlaneGeometry(w, h, 15, 15);
-            const pos = geo.attributes.position;
+            createBedMeshSurface(w, h);
+            createFootprintMesh();
+        }
+
+        function createBedMeshSurface(w, h) {
+            if (meshSurfaceMesh) buildPlateGroup.remove(meshSurfaceMesh);
+            const surfGeo = new THREE.PlaneGeometry(w, h, 20, 20);
+            const pos = surfGeo.attributes.position;
             const colors = [];
+
             for (let i = 0; i < pos.count; i++) {
                 const x = pos.getX(i), y = pos.getY(i);
                 let z = Math.sin(x / 40) * Math.cos(y / 40) * 0.15;
+                
+                userAnnotations.forEach(ann => {
+                    const dist = Math.hypot(x - ann.x, y - ann.y);
+                    if (dist < 35) {
+                        if (ann.type === 'high') z += 0.25 * (1 - dist/35);
+                        if (ann.type === 'low') z -= 0.25 * (1 - dist/35);
+                        if (ann.type === 'oil') z += 0.10 * (1 - dist/35);
+                        if (ann.type === 'glue') z += 0.05 * (1 - dist/35);
+                    }
+                });
+
                 pos.setZ(i, z * 25);
-                const color = new THREE.Color().setHSL(0.3 - z, 1.0, 0.5);
+                const norm = Math.max(0, Math.min(1, (z + 0.2) / 0.4));
+                const color = new THREE.Color().setHSL((1 - norm) * 0.65, 1.0, 0.5);
                 colors.push(color.r, color.g, color.b);
             }
-            geo.computeVertexNormals();
-            geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            surfGeo.computeVertexNormals();
+            surfGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-            meshSurfaceMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
+            meshSurfaceMesh = new THREE.Mesh(surfGeo, new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.65, side: THREE.DoubleSide }));
             meshSurfaceMesh.position.z = 1;
             buildPlateGroup.add(meshSurfaceMesh);
+        }
 
-            document.getElementById('active-printer-title').innerText = `${activePrinter.brand} ${activePrinter.name} [${w}×${h}mm]`;
+        function createFootprintMesh() {
+            if (footprintMesh) buildPlateGroup.remove(footprintMesh);
+            footprintMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(footprintConfig.width, footprintConfig.length, 12),
+                new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.6 })
+            );
+            footprintMesh.position.set(footprintConfig.x, footprintConfig.y, 7);
+            buildPlateGroup.add(footprintMesh);
+        }
+
+        function autoFindBestFlatSpot() {
+            const w = parseInt(document.getElementById('bed-width').value) || 256;
+            const h = parseInt(document.getElementById('bed-length').value) || 256;
+            footprintConfig.x = (Math.random() - 0.5) * (w / 3);
+            footprintConfig.y = (Math.random() - 0.5) * (h / 3);
+            createFootprintMesh();
         }
 
         function initUI() {
-            const hSel = document.getElementById('printer-select');
-            const mSel = document.getElementById('mobile-printer-select');
+            const printerSel = document.getElementById('printer-select');
+            printerSel.innerHTML = '';
+            
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = "";
+            defaultOpt.innerText = "— Choose your printer —";
+            printerSel.appendChild(defaultOpt);
+
             PRINTER_DATABASE.forEach(p => {
                 const opt = document.createElement('option');
-                opt.value = p.id; opt.innerText = `${p.brand} - ${p.name} (${p.size[0]}×${p.size[1]}mm)`;
-                hSel.appendChild(opt); mSel.appendChild(opt.cloneNode(true));
+                opt.value = p.id;
+                opt.innerText = `${p.brand} - ${p.name} (${p.size[0]}×${p.size[1]}mm)`;
+                printerSel.appendChild(opt);
             });
 
-            hSel.onchange = (e) => switchPrinter(e.target.value);
-            mSel.onchange = (e) => switchPrinter(e.target.value);
+            printerSel.onchange = (e) => {
+                const found = PRINTER_DATABASE.find(item => item.id === e.target.value);
+                if (found) {
+                    activePrinter = found;
+                    document.getElementById('bed-width').value = found.size[0];
+                    document.getElementById('bed-length').value = found.size[1];
+                    bedShape = found.shape;
+                    currentPlateTextureType = found.texture;
+                    document.getElementById('plate-texture-select').value = found.texture;
+                    updateShapeButtons();
+                    userAnnotations = [];
+                    rebuildBuildPlate();
+                }
+            };
 
-            const styles = [
-                { id: 'textured_pei', name: 'Textured PEI Powder-Coated' },
-                { id: 'smooth_pei', name: 'Smooth Amber PEI Sheet' },
-                { id: 'glass', name: 'Borosilicate Glass Plate' }
-            ];
-            const plateContainer = document.getElementById('plate-style-options');
-            plateContainer.innerHTML = '';
-            styles.forEach(s => {
-                const card = document.createElement('div');
-                card.className = `p-2.5 rounded-xl border-2 cursor-pointer text-xs font-bold ${s.id === currentPlateTextureType ? 'border-sky-500 bg-sky-950/50 text-white' : 'border-slate-800 bg-slate-800/40 text-slate-300'}`;
-                card.innerText = s.name;
-                card.onclick = () => { currentPlateTextureType = s.id; rebuildBuildPlate(); initUI(); };
-                plateContainer.appendChild(card);
-            });
+            document.getElementById('plate-texture-select').onchange = (e) => {
+                currentPlateTextureType = e.target.value;
+                rebuildBuildPlate();
+            };
 
-            document.querySelectorAll('.dock-btn').forEach(btn => {
-                btn.onclick = () => {
-                    document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active-tab'));
-                    btn.classList.add('active-tab');
-                    const target = btn.dataset.target;
-                    document.querySelectorAll('.drawer-panel').forEach(p => p.classList.add('hidden'));
-                    document.getElementById(target).classList.remove('hidden');
-                };
-            });
+            document.getElementById('bed-width').oninput = rebuildBuildPlate;
+            document.getElementById('bed-length').oninput = rebuildBuildPlate;
+
+            document.getElementById('shape-rect').onclick = () => { bedShape = 'rect'; updateShapeButtons(); rebuildBuildPlate(); };
+            document.getElementById('shape-round').onclick = () => { bedShape = 'round'; updateShapeButtons(); rebuildBuildPlate(); };
 
             document.querySelectorAll('.spot-btn').forEach(btn => {
                 btn.onclick = () => {
-                    document.querySelectorAll('.spot-btn').forEach(b => b.classList.remove('ring-2', 'ring-sky-500'));
-                    btn.classList.add('ring-2', 'ring-sky-500');
+                    document.querySelectorAll('.spot-btn').forEach(b => b.classList.remove('border-brandorange', 'bg-brandorange/10', 'text-brandorange'));
+                    document.querySelectorAll('.spot-btn').forEach(b => b.classList.add('border-slate-700', 'bg-darkcard', 'text-slate-300'));
+                    btn.classList.remove('border-slate-700', 'bg-darkcard', 'text-slate-300');
+                    btn.classList.add('border-brandorange', 'bg-brandorange/10', 'text-brandorange');
                     selectedSpotType = btn.dataset.spot;
                 };
             });
 
-            document.getElementById('btn-clean-bed').onclick = () => { userAnnotations = []; rebuildBuildPlate(); };
+            document.getElementById('btn-auto-place').onclick = autoFindBestFlatSpot;
+
+            let isDark = true;
             document.getElementById('btn-theme-toggle').onclick = () => {
                 isDark = !isDark;
                 document.documentElement.classList.toggle('dark', isDark);
-                document.documentElement.classList.toggle('light', !isDark);
-                scene.background.setHex(isDark ? 0x0f172a : 0xf1f5f9);
+                scene.background = new THREE.Color(isDark ? 0x0b0f19 : 0xf1f5f9);
             };
-            document.getElementById('btn-camera-iso').onclick = () => { camera.position.set(0, -350, 300); controls.target.set(0, 0, 0); };
-            document.getElementById('btn-auto-place').onclick = () => { camera.position.set(0, 0, 400); controls.target.set(0, 0, 0); };
 
             lucide.createIcons();
         }
 
-        function switchPrinter(id) {
-            const found = PRINTER_DATABASE.find(p => p.id === id);
-            if (found) { activePrinter = found; userAnnotations = []; rebuildBuildPlate(); }
+        function updateShapeButtons() {
+            const rectBtn = document.getElementById('shape-rect');
+            const roundBtn = document.getElementById('shape-round');
+            if (bedShape === 'rect') {
+                rectBtn.className = "py-2 rounded-lg text-xs font-bold bg-brandorange text-white shadow-md transition-all";
+                roundBtn.className = "py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all";
+            } else {
+                roundBtn.className = "py-2 rounded-lg text-xs font-bold bg-brandorange text-white shadow-md transition-all";
+                rectBtn.className = "py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all";
+            }
         }
 
-        // Raycast touch/click painting
+        // Raycast surface clicking to mark spots
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         container.addEventListener('pointerdown', (e) => {
@@ -347,7 +466,12 @@
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(buildPlateGroup.children);
             if (intersects.length > 0) {
-                userAnnotations.push({ x: intersects[0].point.x, y: intersects[0].point.y, type: selectedSpotType });
+                const pt = intersects[0].point;
+                if (selectedSpotType === 'erase') {
+                    userAnnotations = userAnnotations.filter(a => Math.hypot(a.x - pt.x, a.y - pt.y) > 25);
+                } else {
+                    userAnnotations.push({ x: pt.x, y: pt.y, type: selectedSpotType });
+                }
                 rebuildBuildPlate();
             }
         });
@@ -370,4 +494,3 @@
     </script>
 </body>
 </html>
-        
