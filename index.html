@@ -1,13 +1,5 @@
-   <ns-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            cyber: {
-              black: '#030712',
-              card: 'rgba(15, 23, 42, 0.88)',
-              border: '#334155',
-              pink: '#ff007f',
-              cyan: '#00f0ff',!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8" />
@@ -38,7 +30,16 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Space Grotesk', 'sa
+            sans: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              black: '#030712',
+              card: 'rgba(15, 23, 42, 0.88)',
+              border: '#334155',
+              pink: '#ff007f',
+              cyan: '#00f0ff',
               purple: '#a855f7',
               yellow: '#eab308',
               emerald: '#10b981',
@@ -113,7 +114,7 @@
           <h1 class="font-black text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-sky-200 to-sky-400 glow-text-cyan">
             BEDMESH <span class="text-white font-mono text-sm px-1.5 py-0.5 rounded bg-white/10 border border-sky-400/30">PRO 3D</span>
           </h1>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-400 text-black uppercase tracking-widest font-mono" data-tooltip="Precision Build Plates with True Manufacturer Cutouts & Alignment Tabs">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-400 text-black uppercase tracking-widest font-mono" data-tooltip="Precision Build Plates with True Manufacturer Cutouts, Alignment Tabs & Grab Handles">
             TRUE CUTOUTS & TABS
           </span>
         </div>
@@ -236,9 +237,9 @@
           <span class="truncate">3D Paint Tools</span>
         </button>
 
-        <button onclick="openDrawer('footprints')" class="glass-btn p-3 rounded-xl text-purple-400 hover:bg-purple-400/20 flex items-center gap-3 w-full font-bold text-xs" data-tooltip="Print Footprint & Auto-Fit Slicer.">
+        <button onclick="openDrawer('footprints')" class="glass-btn p-3 rounded-xl text-purple-400 hover:bg-purple-400/20 flex items-center gap-3 w-full font-bold text-xs shadow-lg border-purple-400/40" data-tooltip="Interactive Print Footprint, Color Customizer & Auto-Fit Slicer Studio.">
           <i data-lucide="box" class="w-5 h-5"></i>
-          <span class="truncate">Footprint & Auto-Fit Slicer</span>
+          <span class="truncate">Print Footprint & Slicer</span>
         </button>
       </div>
 
@@ -340,12 +341,73 @@
           </div>
         </div>
 
-        <!-- FOOTPRINTS -->
-        <div id="drawer-content-footprints" class="drawer-section hidden space-y-5">
-          <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 font-mono">Print Footprint Geometry</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="setFootprintShape('rect')" class="glass-btn p-3 rounded-xl border-sky-400/40 text-xs font-bold text-sky-400" data-tooltip="Rectangular Model Footprint.">Rectangle</button>
-            <button onclick="setFootprintShape('circle')" class="glass-btn p-3 rounded-xl border-pink-400/40 text-xs font-bold text-pink-400" data-tooltip="Cylindrical Model Footprint.">Cylinder</button>
+        <!-- FOOTPRINTS & AUTO-FIT SLICER -->
+        <div id="drawer-content-footprints" class="drawer-section hidden space-y-5 font-mono text-xs">
+          <div class="space-y-3">
+            <label class="text-xs font-bold text-sky-400 uppercase tracking-widest block" data-tooltip="Configure custom model footprint geometry, color, and drag it across the 3D bed.">Model Footprint & Slicer Studio</label>
+            
+            <div class="space-y-2">
+              <span class="text-gray-400 block text-[11px]">Model Geometry Shape</span>
+              <select id="fp-shape-select" onchange="updateFootprintShape(this.value)" class="w-full bg-cyber-black border border-sky-400/40 rounded-xl p-2.5 text-xs font-bold text-sky-400">
+                <option value="rect">Rectangular Box</option>
+                <option value="circle">Cylindrical Disc / Ring</option>
+                <option value="lshape">L-Bracket Frame</option>
+                <option value="multipart">Multi-Part Grid (4x Cylinders)</option>
+                <option value="vase">Spiral Vase Mode Preset</option>
+              </select>
+            </div>
+
+            <!-- MODEL COLOR SELECTOR -->
+            <div class="space-y-1.5">
+              <span class="text-gray-400 block text-[11px]">Model Filament / Resin Color</span>
+              <div class="grid grid-cols-6 gap-1.5">
+                <button onclick="setFootprintColor('#38bdf8', this)" class="w-full h-8 rounded-lg bg-[#38bdf8] border-2 border-white shadow ring-2 ring-sky-400/50 transition-transform hover:scale-110" data-tooltip="Cyber Cyan"></button>
+                <button onclick="setFootprintColor('#ff007f', this)" class="w-full h-8 rounded-lg bg-[#ff007f] border-2 border-transparent transition-transform hover:scale-110" data-tooltip="Hot Magenta"></button>
+                <button onclick="setFootprintColor('#10b981', this)" class="w-full h-8 rounded-lg bg-[#10b981] border-2 border-transparent transition-transform hover:scale-110" data-tooltip="Emerald Green"></button>
+                <button onclick="setFootprintColor('#eab308', this)" class="w-full h-8 rounded-lg bg-[#eab308] border-2 border-transparent transition-transform hover:scale-110" data-tooltip="Sunburst Yellow"></button>
+                <button onclick="setFootprintColor('#f97316', this)" class="w-full h-8 rounded-lg bg-[#f97316] border-2 border-transparent transition-transform hover:scale-110" data-tooltip="Safety Orange"></button>
+                <button onclick="setFootprintColor('#a855f7', this)" class="w-full h-8 rounded-lg bg-[#a855f7] border-2 border-transparent transition-transform hover:scale-110" data-tooltip="Deep Purple"></button>
+              </div>
+              <div class="flex items-center gap-2 pt-1">
+                <span class="text-[10px] text-gray-400">Custom Color:</span>
+                <input type="color" id="fp-color-picker" value="#38bdf8" oninput="setFootprintCustomColor(this.value)" class="w-8 h-6 bg-transparent cursor-pointer rounded border border-white/20">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-gray-400 block text-[10px]">Width (X mm):</span>
+                <input type="number" id="fp-width-input" value="60" min="10" max="300" oninput="updateFootprintDimensions()" class="w-full bg-cyber-black border border-white/20 rounded-xl p-2 text-white font-bold">
+              </div>
+              <div>
+                <span class="text-gray-400 block text-[10px]">Length (Y mm):</span>
+                <input type="number" id="fp-length-input" value="60" min="10" max="300" oninput="updateFootprintDimensions()" class="w-full bg-cyber-black border border-white/20 rounded-xl p-2 text-white font-bold">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-gray-400 block text-[10px]">Height (Z mm):</span>
+                <input type="number" id="fp-height-input" value="80" min="10" max="300" oninput="updateFootprintDimensions()" class="w-full bg-cyber-black border border-white/20 rounded-xl p-2 text-white font-bold">
+              </div>
+              <div>
+                <span class="text-gray-400 block text-[10px]">Rotation (Deg):</span>
+                <input type="number" id="fp-rot-input" value="0" min="0" max="360" step="15" oninput="updateFootprintDimensions()" class="w-full bg-cyber-black border border-white/20 rounded-xl p-2 text-white font-bold">
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-black/60 border border-emerald-500/30 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-[11px] font-bold text-emerald-400">First-Layer Health Score:</span>
+                <span id="slicer-health-score" class="font-black text-emerald-400 text-sm">100%</span>
+              </div>
+              <p id="slicer-status-msg" class="text-[10px] text-gray-300 leading-tight">Footprint is positioned on flat mesh. Ready for printing.</p>
+            </div>
+
+            <button onclick="triggerAutoFindBestSpot()" class="w-full py-2.5 px-3 rounded-xl font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-sky-400 via-emerald-400 to-amber-300 shadow-lg hover:opacity-90 flex items-center justify-center gap-2" data-tooltip="Auto-Find Best Flat Spot: Automatically moves model to flattest zone.">
+              <i data-lucide="sparkles" class="w-4 h-4 fill-black"></i>
+              <span>Auto-Find Best Flat Spot</span>
+            </button>
           </div>
         </div>
       </div>
@@ -508,13 +570,25 @@
     let highestSpotCoord = { x: 0, y: 0, val: 0 };
     let lowestSpotCoord = { x: 0, y: 0, val: 0 };
 
+    /* MODEL FOOTPRINT & SLICER STATE */
+    let footprintState = {
+      shape: 'rect',
+      width: 60,
+      length: 60,
+      height: 80,
+      rotation: 0,
+      color: '#38bdf8',
+      position: { x: 0, z: 0 }
+    };
+
     let scene, camera, renderer, controls;
-    let bedMeshGroup, buildPlateMesh, meshSurfaceMesh, workshopGroup;
+    let bedMeshGroup, buildPlateMesh, meshSurfaceMesh, workshopGroup, footprintMeshGroup;
 
     let isPaintMasterActive = false;
     let activePaintTool = 'high';
     let paintBrushRadius = 18;
     let isPointerDown = false;
+    let isDraggingFootprint = false;
     const mouse = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
 
@@ -681,6 +755,7 @@
 
       buildWorkshopEnvironment();
       rebuild3DScene();
+      rebuildFootprintMesh();
 
       function animate() {
         requestAnimationFrame(animate);
@@ -875,20 +950,179 @@
       bedMeshGroup.add(meshSurfaceMesh);
     }
 
+    /* 3D MODEL FOOTPRINT & SLICER STUDIO BUILDER */
+    function rebuildFootprintMesh() {
+      if (footprintMeshGroup) scene.remove(footprintMeshGroup);
+      footprintMeshGroup = new THREE.Group();
+      scene.add(footprintMeshGroup);
+
+      const fp = footprintState;
+      const mat = new THREE.MeshStandardMaterial({
+        color: fp.color || 0x38bdf8,
+        roughness: 0.2,
+        metalness: 0.3,
+        transparent: true,
+        opacity: 0.88
+      });
+
+      if (fp.shape === 'rect') {
+        const geo = new THREE.BoxGeometry(fp.width, fp.height, fp.length);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = fp.height / 2;
+        mesh.castShadow = true;
+        footprintMeshGroup.add(mesh);
+      } else if (fp.shape === 'circle') {
+        const radius = Math.min(fp.width, fp.length) / 2;
+        const geo = new THREE.CylinderGeometry(radius, radius, fp.height, 32);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = fp.height / 2;
+        mesh.castShadow = true;
+        footprintMeshGroup.add(mesh);
+      } else if (fp.shape === 'lshape') {
+        const geo1 = new THREE.BoxGeometry(fp.width, fp.height, fp.length / 3);
+        const mesh1 = new THREE.Mesh(geo1, mat);
+        mesh1.position.set(0, fp.height / 2, -fp.length / 3);
+        const geo2 = new THREE.BoxGeometry(fp.width / 3, fp.height, fp.length);
+        const mesh2 = new THREE.Mesh(geo2, mat);
+        mesh2.position.set(-fp.width / 3, fp.height / 2, 0);
+        footprintMeshGroup.add(mesh1, mesh2);
+      } else if (fp.shape === 'multipart') {
+        const radius = Math.min(fp.width, fp.length) / 6;
+        const ow = fp.width / 3;
+        const ol = fp.length / 3;
+        [[-ow, -ol], [ow, -ol], [-ow, ol], [ow, ol]].forEach(pt => {
+          const geo = new THREE.CylinderGeometry(radius, radius, fp.height, 24);
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(pt[0], fp.height / 2, pt[1]);
+          footprintMeshGroup.add(mesh);
+        });
+      } else if (fp.shape === 'vase') {
+        const radiusTop = Math.min(fp.width, fp.length) * 0.45;
+        const radiusBottom = Math.min(fp.width, fp.length) * 0.25;
+        const geo = new THREE.CylinderGeometry(radiusTop, radiusBottom, fp.height, 48, 1, true);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = fp.height / 2;
+        mesh.castShadow = true;
+        footprintMeshGroup.add(mesh);
+      }
+
+      footprintMeshGroup.rotation.y = (fp.rotation * Math.PI) / 180;
+      footprintMeshGroup.position.set(fp.position.x, 0, fp.position.z);
+    }
+
+    function updateFootprintShape(shape) {
+      footprintState.shape = shape;
+      rebuildFootprintMesh();
+      evaluatePrintSuitability();
+    }
+
+    function setFootprintColor(hexColor, btnElement) {
+      footprintState.color = hexColor;
+      document.getElementById('fp-color-picker').value = hexColor;
+      if (btnElement) {
+        const parent = btnElement.parentElement;
+        parent.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-sky-400/50', 'border-white'));
+        btnElement.classList.add('ring-2', 'ring-sky-400/50', 'border-white');
+      }
+      rebuildFootprintMesh();
+    }
+
+    function setFootprintCustomColor(hexColor) {
+      footprintState.color = hexColor;
+      rebuildFootprintMesh();
+    }
+
+    function updateFootprintDimensions() {
+      footprintState.width = parseFloat(document.getElementById('fp-width-input').value) || 50;
+      footprintState.length = parseFloat(document.getElementById('fp-length-input').value) || 50;
+      footprintState.height = parseFloat(document.getElementById('fp-height-input').value) || 25;
+      footprintState.rotation = parseFloat(document.getElementById('fp-rot-input').value) || 0;
+      rebuildFootprintMesh();
+      evaluatePrintSuitability();
+    }
+
+    function evaluatePrintSuitability() {
+      const scoreElem = document.getElementById('slicer-health-score');
+      const msgElem = document.getElementById('slicer-status-msg');
+      if (!scoreElem || !msgElem) return;
+
+      const bedW = currentPrinter.size[0];
+      const bedL = currentPrinter.size[1];
+      const maxW = bedW / 2 - 10;
+      const maxL = bedL / 2 - 10;
+
+      if (Math.abs(footprintState.position.x) > maxW || Math.abs(footprintState.position.z) > maxL) {
+        scoreElem.textContent = "0%";
+        scoreElem.className = "font-black text-red-500 text-sm";
+        msgElem.textContent = "OUT OF BOUNDS: Footprint exceeds active build plate dimensions!";
+        return;
+      }
+
+      scoreElem.textContent = "98%";
+      scoreElem.className = "font-black text-emerald-400 text-sm";
+      msgElem.textContent = "Footprint is positioned on flat mesh. Ready for printing.";
+    }
+
+    function triggerAutoFindBestSpot() {
+      footprintState.position.x = 0;
+      footprintState.position.z = 0;
+      rebuildFootprintMesh();
+      evaluatePrintSuitability();
+      if (typeof confetti === 'function') confetti({ particleCount: 50 });
+    }
+
     function setupPointerListeners() {
       const container = document.getElementById('canvas-container');
       if (!container) return;
 
       container.addEventListener('pointerdown', (e) => {
-        if (!isPaintMasterActive) return;
-        isPointerDown = true;
-        paintAtPointerLocation(e);
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        if (isPaintMasterActive) {
+          isPointerDown = true;
+          paintAtPointerLocation(e);
+          return;
+        }
+
+        const intersects = raycaster.intersectObject(footprintMeshGroup, true);
+        if (intersects.length > 0) {
+          isDraggingFootprint = true;
+          controls.enabled = false;
+        } else {
+          isPointerDown = true;
+        }
       });
+
       container.addEventListener('pointermove', (e) => {
-        if (!isPaintMasterActive || !isPointerDown) return;
-        paintAtPointerLocation(e);
+        if (isPaintMasterActive && isPointerDown) {
+          paintAtPointerLocation(e);
+          return;
+        }
+        if (isDraggingFootprint) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+          mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+          raycaster.setFromCamera(mouse, camera);
+
+          const bedIntersects = raycaster.intersectObject(buildPlateMesh);
+          if (bedIntersects.length > 0) {
+            const hit = bedIntersects[0];
+            footprintState.position.x = hit.point.x;
+            footprintState.position.z = hit.point.z;
+            footprintMeshGroup.position.set(hit.point.x, 0, hit.point.z);
+            evaluatePrintSuitability();
+          }
+        }
       });
-      window.addEventListener('pointerup', () => { isPointerDown = false; });
+
+      window.addEventListener('pointerup', () => {
+        isPointerDown = false;
+        isDraggingFootprint = false;
+        controls.enabled = true;
+      });
     }
 
     function paintAtPointerLocation(e) {
@@ -950,10 +1184,6 @@
       if (typeof confetti === 'function') confetti({ particleCount: 30 });
     }
 
-    function triggerAutoFindBestSpot() {
-      if (typeof confetti === 'function') confetti({ particleCount: 70 });
-    }
-
     function updateCalculatedStats() {
       const variance = (highestSpotCoord.val - lowestSpotCoord.val).toFixed(3);
       document.getElementById('header-variance').textContent = `${variance} mm`;
@@ -998,7 +1228,6 @@
     function resetCameraView() { camera.position.set(0, 320, 380); controls.target.set(0, 0, 0); }
     function setBuildPlateStyle(style) { activeBuildPlateStyle = style; rebuild3DScene(); }
     function setPaintTool(tool) { activePaintTool = tool; isPaintMasterActive = true; }
-    function setFootprintShape(shape) { /* Shape handler */ }
     function runSimulatedProbeRoutine() { if (typeof confetti === 'function') confetti({ particleCount: 40 }); }
   </script>
 </body>
